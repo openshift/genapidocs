@@ -1,0 +1,6 @@
+package: github.com/openshift/genapidocs
+import:
+- package: github.com/go-openapi/loads
+  version: b34ba58071f88db7db67c6825e1113e4807b8648
+- package: gopkg.in/yaml.v2
+  version: 53feefa2559fb8dfa8d81baad31be332c97d6c77

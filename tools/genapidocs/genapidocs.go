@@ -1,24 +1,26 @@
 package main
 
 import (
+    "flag"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+    "strings"
 
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/go-openapi/loads"
-	"github.com/openshift/origin/pkg/apidocs"
+	"github.com/openshift/genapidocs/pkg/apidocs"
 )
 
-func writeAPIDocs(root string) error {
-	err := os.RemoveAll(root)
+func writeAPIDocs(root, base string) error {
+    err := os.RemoveAll(root)
 	if err != nil {
 		return err
 	}
 
-	doc, err := loads.JSONSpec("api/swagger-spec/openshift-openapi-spec.json")
+	doc, err := loads.JSONSpec(strings.Join([]string{base, "api/swagger-spec/openshift-openapi-spec.json"}, "/"))
 	if err != nil {
 		return err
 	}
@@ -44,11 +46,17 @@ func writeAPIDocs(root string) error {
 }
 
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Fprintf(os.Stderr, "%s: usage: %[1]s root\n", os.Args[0])
-		os.Exit(1)
-	}
-	err := writeAPIDocs(os.Args[1])
+    root := flag.String("root", "", "location where generated api docs will be saved (--root=./api-docs)")
+    base := flag.String("base", ".", fmt.Sprintf("base path to directory containing %q", "api/swagger-spec/openshift-openapi-spec.json. Defaults to the current working directory."))	
+
+    flag.Parse()
+
+    if len(*root) == 0 {
+        fmt.Fprintf(os.Stderr, "You must specify a --root flag denoting the location where the generated topic map will be saved: --root=./output\n")    
+        os.Exit(1)
+    }
+
+	err := writeAPIDocs(*root, *base)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %s\n", os.Args[0], err)
 		os.Exit(1)
